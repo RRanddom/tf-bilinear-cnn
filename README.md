@@ -11,9 +11,9 @@
 
 ## My Results
 
-| Dataset         | CUB200           |  FGVC-Aircraft       | Standford Cars       | 
+| Dataset         | CUB200           | FGVC-Aircraft        | Standford Cars       | 
 |-----------------|------------------|----------------------|----------------------|
-| Accuracy        | 82.00%           | 85.00%               | 85.00%               |
+| Accuracy        | -----%           | -----%               | -----%               |
 
 
 ### References
