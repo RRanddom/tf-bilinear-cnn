@@ -55,8 +55,8 @@ class BilinearCnn(object):
             flip_fn = lambda x: tf.image.random_flip_left_right(x)
             processed = tf.map_fn(flip_fn, processed)
 
-            brightness_fn = lambda x: tf.image.random_brightness(x, max_delta=0.2)
-            processed = tf.map_fn(brightness_fn, processed)
+            # brightness_fn = lambda x: tf.image.random_brightness(x, max_delta=0.2)
+            # processed = tf.map_fn(brightness_fn, processed)
 
         else:
             processed = tf.image.resize_images(img, (448, 448))
