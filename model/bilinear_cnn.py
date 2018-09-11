@@ -11,6 +11,55 @@ from tools.config import cfg
 
 _R_MEAN, _G_MEAN, _B_MEAN = cfg._RGB_MEAN
 
+
+
+vgg = Vgg(is_training=False)
+
+def bilinear_cnn(images, is_training, fine_tuning, num_class=100):
+
+    rgb_mean = tf.reshape(np.array([_R_MEAN, _G_MEAN, _B_MEAN]).astype(np.float32), [1,1,1,3])
+    img = images - rgb_mean
+    
+    if is_training:
+
+        resized = tf.image.resize_images(img, (488, 488))
+
+        crop_fn = lambda x: tf.random_crop(x, [448, 448, 3])
+        processed = tf.map_fn(crop_fn, resized)
+
+        flip_fn = lambda x: tf.image.random_flip_left_right(x)
+        processed = tf.map_fn(flip_fn, processed)
+
+        # brightness_fn = lambda x: tf.image.random_brightness(x, max_delta=0.2)
+        # processed = tf.map_fn(brightness_fn, processed)
+
+    else:
+        processed = tf.image.resize_images(img, (448, 448))
+
+    img_after_preprocess = tf.identity(processed)
+
+    cnn_conv5_3, _ = vgg.convbody(img_after_preprocess)
+    conv5_3 = tf.identity(cnn_conv5_3)
+
+    with tf.variable_scope("sum-pooling"):
+        cnn_conv5_3 = tf.transpose(cnn_conv5_3, perm=[0, 3, 1 , 2]) # shift to [Batch, Channel, Height, Width] ==> [B,512,28,28]
+        cnn_conv5_3 = tf.reshape(cnn_conv5_3, [-1,512,28*28])
+        cnn_conv5_3_T = tf.transpose(cnn_conv5_3, perm=[0,2,1])
+
+        x_value = tf.matmul(cnn_conv5_3, cnn_conv5_3_T)
+        x_value = tf.reshape(x_value, [-1, 512*512])
+        x_value /= (28*28)
+        y_value = tf.sqrt(x_value + 1e-10)
+        z_value = tf.nn.l2_normalize(y_value, axis=1)
+
+    with tf.variable_scope("fc-layer"):
+        z_value = slim.dropout(z_value, 0.5, is_training=is_training)
+        fc_net = slim.fully_connected(z_value, num_class, biases_initializer=tf.constant_initializer(1.0), trainable=is_training, activation_fn=None, normalizer_fn=None)
+    
+    return fc_net
+
+
+
 class BilinearCnn(object):
     
     def __init__(self, is_training, fine_tuning, num_class=100):
