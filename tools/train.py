@@ -11,14 +11,57 @@ from tools.config import cfg
 from model.bilinear_cnn import BilinearCnn
 from model.vgg import Vgg
 
-def snapshot(sess, saver, _iter, train_dir):
-    if not os.path.exists(train_dir):
-        os.makedirs(train_dir)
+def bcnn_stage1_model(features, labels, mode, params):
+    optimizer = tf.train.MomentumOptimizer(learning_rate=truncated_learning_rate,
+                                            momentum=params['momentum'])
+    return tf.estimator.EstimatorSpec()
+
+
+def bcnn_stage_finetune(features, labels, mode, params):
+
+    optimizer = tf.train.MomentumOptimizer(learning_rate=truncated_learning_rate,
+                                            momentum=params['momentum'])
+    return tf.estimator.EstimatorSpec()
+
+
+# def my_model_fn(
+#    features, # This is batch_features from input_fn
+#    labels,   # This is batch_labels from input_fn
+#    mode,     # An instance of tf.estimator.ModeKeys, see below
+#    params):  # Additional configuration
+
+
+
+# return tf.estimator.EstimatorSpec(
+#                       mode=mode,
+#                       predictions=predictions,
+#                       loss=loss,
+#                       train_op=train_op,
+#                       eval_metric_ops=metrics,
+#                       scaffold=tf.train.Scaffold(init_fn=train_helper.get_init_fn_for_scaffold_(params['checkpoint_path'], params['model_dir'], params['checkpoint_exclude_scopes'], params['model_scope'], params['checkpoint_model_scope'], params['ignore_missing_vars'])))
+
+
+def input_fn(dataset):
+    pass
+    # return feature_dict,label
+
+
+
+
+if __name__ == '__main__':
+
+
+
+
+
+# def snapshot(sess, saver, _iter, train_dir):
+    # if not os.path.exists(train_dir):
+    #     os.makedirs(train_dir)
     
-    file_name = "bilinear"+"_"+str(_iter)+".ckpt"
-    full_path = os.path.join(train_dir, file_name)
-    saver.save(sess, full_path)
-    print ("write snapshot to:",full_path)
+    # file_name = "bilinear"+"_"+str(_iter)+".ckpt"
+    # full_path = os.path.join(train_dir, file_name)
+    # saver.save(sess, full_path)
+    # print ("write snapshot to:",full_path)
 
 
 def train_for_stage1(pretrained_vgg_path, log_dir, train_dir, learning_rate=0.9):
