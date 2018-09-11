@@ -2,6 +2,7 @@ import collections
 import six
 import tensorflow as tf 
 import os
+import sys
 
 class ImageReader(object):
     
@@ -63,6 +64,26 @@ def _bytes_list_feature(values):
         bytes_list=tf.train.BytesList(value=[norm2bytes(values)]))
 
 
+def image_to_tfexample(image_data, img_name, height, width, class_label):
+    """
+    Converts one image/segmentation pair to tf example
+
+    Args:
+        image_data:
+        filename:
+        height:
+        width
+        seg_data: string of semantic segmentation data.    
+    """
+
+    return tf.train.Example(features=tf.train.Features(feature={
+        'image/encoded': _bytes_list_feature(image_data),
+        'image/filename': _bytes_list_feature(img_name),
+        'image/height': _int64_list_feature(height),
+        'image/width': _int64_list_feature(width),
+        'image/label': _int64_list_feature(class_label)
+    }))
+
 # imgs_annot_for_train = "/data/CUB_200_2011/CUB_200_2011/train.pkl"
 # imgs_annot_for_test = "/data/CUB_200_2011/CUB_200_2011/test.pkl"
 cub_img_dir = "/data/CUB_200_2011/CUB_200_2011/images"
@@ -72,6 +93,9 @@ cub_img_dir = "/data/CUB_200_2011/CUB_200_2011/images"
 def convert_cub200_to_tfrecord(img_dir):
     dir_names = tf.gfile.ListDirectory(img_dir)
     output_dir = os.path.join('/data/CUB_200_2011/CUB_200_2011', 'tfrecord')
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     image_reader = ImageReader('jpeg', channels=3)
 
