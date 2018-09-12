@@ -9,9 +9,9 @@ import tensorflow as tf
 from data.dataset_factory import get_dataset
 from tools.config import cfg
 from model.bilinear_cnn import bilinear_cnn
-from model.vgg import Vgg
 
 def _preprocess_for_training(input_image, input_height, input_width, image_name, image_label, label_desc):
+    input_image = tf.expand_dims(input_image, 0)
     resized = tf.image.resize_images(input_image, (488, 488))
     crop_fn = lambda x: tf.random_crop(x, [448, 448, 3])
     processed = tf.map_fn(crop_fn, resized)
@@ -20,6 +20,7 @@ def _preprocess_for_training(input_image, input_height, input_width, image_name,
     brightness_fn = lambda x: tf.image.random_brightness(x, max_delta=0.2)
     processed = tf.map_fn(brightness_fn, processed)
 
+    processed = processed[0]
     return processed, input_height, input_width, image_name, image_label, label_desc,
 
 

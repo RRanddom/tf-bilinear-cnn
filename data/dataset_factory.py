@@ -5,7 +5,7 @@ from __future__ import division
 # import pickle
 # from PIL import Image, ImageOps
 # import numpy as np
-# import os
+import os
 # import random
 
 # from data.standford_cars import standfordcars_dataset
@@ -44,7 +44,7 @@ def get_dataset(dataset_name, split_name):
     """
 
     dataset_dir = get_dataset_dir(dataset_name)
-    file_pattern = os.path.join(dataset_dir, file_pattern % split_name)
+    file_pattern = os.path.join(dataset_dir, _FILE_PATTERN % split_name)
     filenames = tf.gfile.Glob(file_pattern)
     
     dataset = tf.data.TFRecordDataset(filenames)

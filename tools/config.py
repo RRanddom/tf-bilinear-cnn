@@ -36,7 +36,7 @@ cfg.RESTORE_INTERVAL = 1500
 cfg.stage1_base_lr = .9
 cfg.stage2_base_lr = 1e-3
 cfg.momentum = .9
-cfg.BATCH_SIZE = 24
+cfg.BATCH_SIZE = 32
 
 # Choose the dataset you want to train/test
 cfg.current_dataset = "cub200" # one of ["cub200", "aircraft", "standfordcars"]

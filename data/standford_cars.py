@@ -9,6 +9,7 @@ import os
 from data.make_tfrecord import ImageReader, image_to_tfexample
 import math
 import sys
+import tensorflow as tf
 
 stanford_car_devkit = "/data/standford-cars/devkit"
 
@@ -66,9 +67,9 @@ def convert_standfordcars_to_tfrecord():
                 height, width, channel = image_reader.read_image_dims(image_data)
 
                 if channel != 3:
-                    print ("\nimage:{} channel number:{}, not a legal rgb image".format(image_name, channel))
+                    print ("\nimage:{} channel number:{}, not a legal rgb image".format(img_name, channel))
                 else:
-                    image_record = image_to_tfexample(image_data, img_name, height, width, img_cls, img_label_desc)
+                    image_record = image_to_tfexample(image_data, str(img_name), height, width, img_cls, img_label_desc)
                     tfrecord_writer.write(image_record.SerializeToString())
 
         sys.stdout.write('\n')
@@ -99,9 +100,9 @@ def convert_standfordcars_to_tfrecord():
                 height, width, channel = image_reader.read_image_dims(image_data)
 
                 if channel != 3:
-                    print ("\nimage:{} channel number:{}, not a legal rgb image".format(image_name, channel))
+                    print ("\nimage:{} channel number:{}, not a legal rgb image".format(img_name, channel))
                 else:
-                    image_record = image_to_tfexample(image_data, img_name, height, width, img_cls, img_label_desc)
+                    image_record = image_to_tfexample(image_data, str(img_name), height, width, img_cls, img_label_desc)
                     tfrecord_writer.write(image_record.SerializeToString())
 
         sys.stdout.write('\n')
