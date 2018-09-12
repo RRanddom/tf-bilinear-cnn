@@ -34,7 +34,7 @@ cfg.RUN_SUMMARY_INTERVAL = 100
 cfg.RESTORE_INTERVAL = 1500
 
 # Choose the dataset you want to train/test
-cfg.current_dataset = "standfordcars" # one of ["cub200", "aircraft", "standfordcars"]
+cfg.current_dataset = "cub200" # one of ["cub200", "aircraft", "standfordcars"]
 
 if cfg.current_dataset == "cub200":
     cfg._RGB_MEAN = cub200._RGB_MEAN

@@ -6,24 +6,22 @@ import sys
 
 class ImageReader(object):
     
-    def __init__(self, image_format='jpeg', channels=3):
+    def __init__(self, image_format='jpeg'):
         with tf.Graph().as_default():
             self._decode_data = tf.placeholder(dtype=tf.string)
             self._image_format = image_format
             self._sess = tf.Session()
             if self._image_format in ('jpeg', 'jpg'):
-                self._decode = tf.image.decode_jpeg(self._decode_data, 
-                                                    channels=channels)
+                self._decode = tf.image.decode_jpeg(self._decode_data)
             elif self._image_format in ('png'):
-                self._decode = tf.image.decode_png(self._decode_data, 
-                                                    channels=channels)
+                self._decode = tf.image.decode_png(self._decode_data)
         
     def read_image_dims(self, image_data):
         """
         Decodes the Image data string.
         """
         image = self.decode_image(image_data)
-        return image.shape[:2]
+        return image.shape[:3]
     
     def decode_image(self, image_data):
         """
@@ -63,8 +61,7 @@ def _bytes_list_feature(values):
     return tf.train.Feature(
         bytes_list=tf.train.BytesList(value=[norm2bytes(values)]))
 
-
-def image_to_tfexample(image_data, img_name, height, width, class_label):
+def image_to_tfexample(image_data, img_name, height, width, class_label, class_desc):
     """
     Converts one image/segmentation pair to tf example
 
@@ -81,51 +78,59 @@ def image_to_tfexample(image_data, img_name, height, width, class_label):
         'image/filename': _bytes_list_feature(img_name),
         'image/height': _int64_list_feature(height),
         'image/width': _int64_list_feature(width),
-        'image/label': _int64_list_feature(class_label)
+        'image/label': _int64_list_feature(class_label),
+        'image/labeldesc': _bytes_list_feature(class_desc)
     }))
 
-# imgs_annot_for_train = "/data/CUB_200_2011/CUB_200_2011/train.pkl"
-# imgs_annot_for_test = "/data/CUB_200_2011/CUB_200_2011/test.pkl"
-cub_img_dir = "/data/CUB_200_2011/CUB_200_2011/images"
 
-# 001.Black_footed_Albatross
+def _parse_function(example_proto):
+    keys_to_features = {
+        'image/encoded': tf.FixedLenFeature(
+            (), tf.string, default_value=''),
+        'image/filename': tf.FixedLenFeature(
+            (), tf.string, default_value=''),
+        'image/height': tf.FixedLenFeature(
+            (), tf.int64, default_value=0),
+        'image/width': tf.FixedLenFeature(
+            (), tf.int64, default_value=0),
+        'image/label': tf.FixedLenFeature(
+            (), tf.int64),
+        'image/labeldesc': tf.FixedLenFeature(
+            (), tf.string)
+    }
+    parsed_features = tf.parse_single_example(example_proto, keys_to_features)
 
-def convert_cub200_to_tfrecord(img_dir):
-    dir_names = tf.gfile.ListDirectory(img_dir)
-    output_dir = os.path.join('/data/CUB_200_2011/CUB_200_2011', 'tfrecord')
+    with tf.variable_scope('decoder'):
+        input_image = tf.image.decode_jpeg(parsed_features['image/encoded'])
+        input_height = parsed_features['image/height']
+        input_width = parsed_features['image/width']
+        image_name = parsed_features['image/filename']
+        image_label = parsed_features['image/label']
+        label_desc = parsed_features['image/labeldesc']
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    return input_image, input_height, input_width, image_name, image_label, label_desc
 
-    image_reader = ImageReader('jpeg', channels=3)
 
-    split = 'train'
-    shard_id = 0
-    _NUM_SHARDS = 1
-    output_filename = os.path.join(
-            output_dir, '%s-%05d-of-%05d.tfrecord' % (split, shard_id, _NUM_SHARDS))
+# def _preprocess_for_training(input_image, height, width, image_name, label):
+#     processed_image = tf.cast(input_image, tf.float32)
+
+#     processed_image = tf.image.resize_images(input_image, size=(488,488))
     
-    with tf.python_io.TFRecordWriter(output_filename) as tfrecord_writer:    
-        for dir_name in dir_names:
-            class_label = int(dir_name.split('.')[0]) - 1
-            #all_images
-            images = tf.gfile.Glob(os.path.join(img_dir, dir_name) + '/*.jpg')
-            sys.stdout.write("Processing label:"+str(class_label))
+#     last_dim = tf.shape(processed_image)[-1]
 
-            for img_name in images:
-                image_data = tf.gfile.FastGFile(img_name, 'rb').read()
-                height, width = image_reader.read_image_dims(image_data)
-
-                img_record = image_to_tfexample(image_data, img_name, height, width, class_label)
-                tfrecord_writer.write(img_record.SerializeToString())
-        
-            sys.stdout.write('\n')
-    
-    sys.stdout.flush()
-
-if __name__ == '__main__':
-    convert_cub200_to_tfrecord(cub_img_dir)
+#     return processed_image, height, width, image_name, label
 
 
+
+# def input_pipeline(num_epochs=25):
+#     tf_record_file = '/data/CUB_200_2011/CUB_200_2011/tfrecord/train-00000-of-00001.tfrecord'
+#     dataset = tf.data.TFRecordDataset([tf_record_file])
+#     dataset = dataset.map(_parse_function)
+#     dataset = dataset.map(_preprocess_for_training)
+#     dataset = dataset.shuffle(buffer_size=500).repeat(num_epochs).batch(12)
+
+#     iterator = dataset.make_one_shot_iterator()
+#     input_image, height, width, image_name, label = iterator.get_next()
+#     return input_image, label
 
 
