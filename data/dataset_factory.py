@@ -2,15 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-# import pickle
-# from PIL import Image, ImageOps
-# import numpy as np
 import os
-# import random
-
-# from data.standford_cars import standfordcars_dataset
-# from data.cub200_data import cub200_dataset
-# from data.aircraft_data import aircraft_dataset
 
 import tensorflow as tf
 from data.make_tfrecord import _parse_function
@@ -22,7 +14,7 @@ def get_dataset_dir(dataset_name):
         return '/data/CUB_200_2011/CUB_200_2011/tfrecord/'
 
     elif dataset_name == 'aircraft':
-        raise ValueError('aircraft dataset under construction')
+        return '/data/fgvc-aircraft-2013b/data/tfrecord'
 
     elif dataset_name == 'standfordcars':
         return '/data/standford-cars/tfrecord/'

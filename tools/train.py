@@ -12,6 +12,11 @@ from model.bilinear_cnn import bilinear_cnn
 
 def _preprocess_for_training(input_image, input_height, input_width, image_name, image_label, label_desc):
     input_image = tf.expand_dims(input_image, 0)
+
+    _R_MEAN, _G_MEAN, _B_MEAN = cfg._RGB_MEAN
+    rgb_mean = tf.reshape(np.array([_R_MEAN, _G_MEAN, _B_MEAN]).astype(np.float32), [1,1,1,3])
+    input_image = input_image - rgb_mean    
+
     resized = tf.image.resize_images(input_image, (488, 488))
     crop_fn = lambda x: tf.random_crop(x, [448, 448, 3])
     processed = tf.map_fn(crop_fn, resized)
@@ -35,7 +40,7 @@ def input_pipeline(num_epochs=10):
     return input_image, image_label
 
 
-def get_init_fn_for_scaffold(vgg_pretrained_path, model_dir, exclude_vars=[]):
+def get_init_fn_for_train(vgg_pretrained_path, model_dir, exclude_vars=[]):
 
     if tf.train.latest_checkpoint(model_dir):
         tf.logging.info("Ignore pretrained mobilenet path because a checkpoint file already exists")
@@ -62,7 +67,24 @@ def get_init_fn_for_scaffold(vgg_pretrained_path, model_dir, exclude_vars=[]):
 
     return callback
 
-def bcnn_stage1_model(features, labels, mode, params):
+def get_init_fn_for_finetune(train_dir):
+    variables_to_restore = []
+    for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
+        if not 'Momentum' in var.name:
+            variables_to_restore.append(var)
+
+        saver = tf.train.Saver(variables_to_restore)
+        saver.build()
+
+        if tf.gfile.IsDirectory(train_dir):
+            train_dir = tf.train.latest_checkpoint(train_dir)
+
+        def callback(scaffold, sess):
+            sess.restore(sess, train_dir)
+        return callback
+
+
+def bcnn_train_model(features, labels, mode, params):
     """
     Args:
         features: input image batch
@@ -71,7 +93,7 @@ def bcnn_stage1_model(features, labels, mode, params):
         params: additional params
     """
     logits = bilinear_cnn(features, is_training=True, fine_tuning=False, num_class=cfg.num_classes)
-    optimizer = tf.train.MomentumOptimizer(learning_rate=cfg.stage1_base_lr, momentum=cfg.momentum)
+    optimizer = tf.train.MomentumOptimizer(learning_rate=cfg.train_base_lr, momentum=cfg.momentum)
     
     loss = tf.losses.softmax_cross_entropy(onehot_labels=tf.one_hot(labels, depth=cfg.num_classes), logits=logits)
     tf.summary.scalar('softmax_loss', loss)
@@ -82,10 +104,10 @@ def bcnn_stage1_model(features, labels, mode, params):
                                       predictions=logits, 
                                       loss=loss, 
                                       train_op=train_op,
-                                      scaffold=tf.train.Scaffold(init_fn=get_init_fn_for_scaffold(cfg.vgg_pretrained_path, cfg.train_dir)))
+                                      scaffold=tf.train.Scaffold(init_fn=get_init_fn_for_train(cfg.vgg_pretrained_path, cfg.train_dir)))
 
 
-def bcnn_stage2_model(features, labels, mode, params):
+def bcnn_finetune_model(features, labels, mode, params):
     '''
         features: input image batch
         labels:   image label
@@ -93,7 +115,7 @@ def bcnn_stage2_model(features, labels, mode, params):
         params: additional params
     '''
     logits = bilinear_cnn(features, is_training=True, fine_tuning=True, num_class=cfg.num_classes)
-    optimizer = tf.train.MomentumOptimizer(learning_rate=cfg.stage2_base_lr, momentum=cfg.momentum)
+    optimizer = tf.train.MomentumOptimizer(learning_rate=cfg.finetune_base_lr, momentum=cfg.momentum)
     
     loss = tf.losses.softmax_cross_entropy(onehot_labels=tf.one_hot(labels, depth=cfg.num_classes), logits=logits)
     tf.summary.scalar('softmax_loss', loss)
@@ -103,7 +125,8 @@ def bcnn_stage2_model(features, labels, mode, params):
     return tf.estimator.EstimatorSpec(mode=mode, 
                                       predictions=logits, 
                                       loss=loss, 
-                                      train_op=train_op)
+                                      train_op=train_op,
+                                      scaffold=tf.train.Scaffold(init_fn=get_init_fn(cfg.train_dir)))
 
 
 def main(unused_argv):
@@ -113,23 +136,22 @@ def main(unused_argv):
                     .replace(log_step_count_steps=10)
 
     train_dir = cfg.train_dir
-    model = tf.estimator.Estimator(model_fn=bcnn_stage1_model,
+    model = tf.estimator.Estimator(model_fn=bcnn_train_model,
                                     model_dir=train_dir,
                                     config=run_config,
                                     params={})
 
-    tf.logging.info('start training model -- stage1')
-    model.train(input_fn=lambda :input_pipeline(num_epochs=50), hooks=None)
-    tf.logging.info('Finish training model -- stage1')
+    tf.logging.info('start training model')
+    model.train(input_fn=lambda :input_pipeline(num_epochs=45), hooks=None, max_steps=25000)
+    tf.logging.info('Finish training model')
 
 
-
-    finetune_model = tf.estimator.Estimator(model_fn=bcnn_stage2_model, 
+    finetune_model = tf.estimator.Estimator(model_fn=bcnn_finetune_model, 
                                             model_dir=train_dir,
                                             config=run_config,
                                             params={})
     tf.logging.info('start finetuning model')
-    finetune_model.train(input_fn=lambda :input_pipeline(num_epochs=25), hooks=None)
+    finetune_model.train(input_fn=lambda :input_pipeline(num_epochs=20), hooks=None)
     tf.logging.info('finish finetuning model.')
 
 

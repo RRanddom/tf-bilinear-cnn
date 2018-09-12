@@ -12,6 +12,10 @@ from data.dataset_factory import get_dataset
 from tools.config import cfg
 
 def _preprocess_for_testing(input_image, input_height, input_width, image_name, image_label, label_desc):
+        
+    _R_MEAN, _G_MEAN, _B_MEAN = cfg._RGB_MEAN
+    rgb_mean = tf.reshape(np.array([_R_MEAN, _G_MEAN, _B_MEAN]).astype(np.float32), [1,1,3])
+    input_image = input_image - rgb_mean 
     
     resized = tf.image.resize_images(input_image, (448, 448))
 
@@ -28,8 +32,7 @@ def input_pipeline():
     return input_image, image_label
 
 
-
-def bcnn_infer(features, labels, mode, params):
+def bcnn_eval(features, labels, mode, params):
     '''
         features: input image batch
         labels:   image label
@@ -38,7 +41,7 @@ def bcnn_infer(features, labels, mode, params):
     '''
     logits = bilinear_cnn(features, is_training=False, fine_tuning=False, num_class=cfg.num_classes)
     predictions = tf.argmax(logits, axis=0)
-    
+
     loss = tf.losses.softmax_cross_entropy(onehot_labels=tf.one_hot(labels, depth=cfg.num_classes), logits=logits)
     tf.summary.scalar('softmax_loss', loss)
     global_step = tf.train.get_or_create_global_step()
@@ -58,7 +61,7 @@ def main(unused_argv):
                     .replace(log_step_count_steps=10)
 
     train_dir = cfg.train_dir
-    model = tf.estimator.Estimator(model_fn=bcnn_infer,
+    model = tf.estimator.Estimator(model_fn=bcnn_eval,
                                    model_dir=train_dir,
                                    config=run_config,
                                    params={})

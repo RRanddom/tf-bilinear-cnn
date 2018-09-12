@@ -7,7 +7,7 @@ from PIL import Image
 import numpy as np
 import os
 import random
-# from data.dataset import dataset
+
 import tensorflow as tf 
 from data.make_tfrecord import ImageReader, image_to_tfexample
 import math

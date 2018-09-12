@@ -31,11 +31,6 @@ def convert_standfordcars_to_tfrecord():
 
     image_reader = ImageReader('jpeg')
 
-    images_list_file = os.path.join(root_dir, 'images.txt')  #image_id file_name
-    image_id_class_file = os.path.join(root_dir, 'image_class_labels.txt')  # image_id class_label
-    image_train_test_split_file = os.path.join(root_dir, 'train_test_split.txt')# image_id belong_to_train
-
-
     all_training_imgs = pickle.load(open(img_annot_for_train, 'r'))
     all_testing_imgs = pickle.load(open(img_annot_for_test, 'r'))
 
