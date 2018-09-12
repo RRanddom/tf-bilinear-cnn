@@ -33,6 +33,11 @@ cfg.PRINT_LOSS_INTERVAL = 20
 cfg.RUN_SUMMARY_INTERVAL = 100
 cfg.RESTORE_INTERVAL = 1500
 
+cfg.stage1_base_lr = .9
+cfg.stage2_base_lr = 1e-3
+cfg.momentum = .9
+cfg.BATCH_SIZE = 24
+
 # Choose the dataset you want to train/test
 cfg.current_dataset = "cub200" # one of ["cub200", "aircraft", "standfordcars"]
 
@@ -52,12 +57,15 @@ else:
     raise ValueError('Name of dataset unknown %s' % cfg.current_dataset)
 
 # the TensorFlow event files will be placed under log/DATASET_NAME_****/. You can change the output directory
-cfg.log_dir_stage1 = "log/"+cfg.current_dataset+"_bcnn_stage1"
-cfg.log_dir_stage2 = "log/"+cfg.current_dataset+"_bcnn_stage2"
+# cfg.log_dir_stage1 = "log/"+cfg.current_dataset+"_bcnn_stage1"
+# cfg.log_dir_stage2 = "log/"+cfg.current_dataset+"_bcnn_stage2"
 
 # the TensorFlow checkpoint file will be placed under /data/DATASET_NAME_****/. You can change the output directory
-cfg.train_dir_stage1 = "/data/" + cfg.current_dataset + "_bcnn_stage1"
-cfg.train_dir_stage2 = "/data/" + cfg.current_dataset + "_bcnn_stage2"
+# cfg.train_dir_stage1 = "/data/" + cfg.current_dataset + "_bcnn_stage1"
+# cfg.train_dir_stage2 = "/data/" + cfg.current_dataset + "_bcnn_stage2"
+
+
+cfg.train_dir = '/data/' + cfg.current_dataset + 'train_dir'
 
 # Download pretrained vgg model at [http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz]
 cfg.vgg_pretrained_path = "/data/model/tf_model/vgg_16.ckpt"

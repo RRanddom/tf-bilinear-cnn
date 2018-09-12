@@ -111,26 +111,4 @@ def _parse_function(example_proto):
     return input_image, input_height, input_width, image_name, image_label, label_desc
 
 
-# def _preprocess_for_training(input_image, height, width, image_name, label):
-#     processed_image = tf.cast(input_image, tf.float32)
-
-#     processed_image = tf.image.resize_images(input_image, size=(488,488))
-    
-#     last_dim = tf.shape(processed_image)[-1]
-
-#     return processed_image, height, width, image_name, label
-
-
-
-# def input_pipeline(num_epochs=25):
-#     tf_record_file = '/data/CUB_200_2011/CUB_200_2011/tfrecord/train-00000-of-00001.tfrecord'
-#     dataset = tf.data.TFRecordDataset([tf_record_file])
-#     dataset = dataset.map(_parse_function)
-#     dataset = dataset.map(_preprocess_for_training)
-#     dataset = dataset.shuffle(buffer_size=500).repeat(num_epochs).batch(12)
-
-#     iterator = dataset.make_one_shot_iterator()
-#     input_image, height, width, image_name, label = iterator.get_next()
-#     return input_image, label
-
 
