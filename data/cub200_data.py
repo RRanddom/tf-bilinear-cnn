@@ -10,6 +10,8 @@ import random
 # from data.dataset import dataset
 import tensorflow as tf 
 from data.make_tfrecord import ImageReader, image_to_tfexample
+import math
+import sys
 
 birds_classes = []
 
@@ -90,7 +92,7 @@ def convert_cub200_to_tfrecord():
         output_filename = os.path.join(dest_dir, '%s-%02d-of-%02d.tfrecord' %(split, shard_id, _NUM_SHARDS))
         with tf.python_io.TFRecordWriter(output_filename) as tfrecord_writer:
             start_idx = 0
-            end_idx = (min(shard_id + 1) * num_per_shard, len(train_list))
+            end_idx = min((shard_id + 1) * num_per_shard, len(train_list))
 
             for i in range(start_idx, end_idx):
                 sys.stdout.write('\r>> converting image %d/%d shard %d' % (
@@ -106,9 +108,9 @@ def convert_cub200_to_tfrecord():
                 height, width, channel = image_reader.read_image_dims(image_data)
 
                 if channel != 3:
-                    print ("image:{} channel number:{}, not a legal rgb image".format(image_name, channel))
+                    print ("\nimage:{} channel number:{}, not a legal rgb image".format(image_name, channel))
                 else:
-                    image_record = image_to_tfexample(image_data, image_name, height, width, class_label, class_desc)
+                    image_record = image_to_tfexample(image_data, image_name, height, width, img_class, img_label_desc)
                     tfrecord_writer.write(image_record.SerializeToString())
 
         sys.stdout.write('\n')
@@ -122,7 +124,7 @@ def convert_cub200_to_tfrecord():
         output_filename = os.path.join(dest_dir, '%s-%02d-of-%02d.tfrecord' %(split, shard_id, _NUM_SHARDS))
         with tf.python_io.TFRecordWriter(output_filename) as tfrecord_writer:
             start_idx = 0
-            end_idx = (min(shard_id + 1) * num_per_shard, len(test_list))
+            end_idx = min((shard_id + 1) * num_per_shard, len(test_list))
 
             for i in range(start_idx, end_idx):
                 sys.stdout.write('\r>> converting image %d/%d shard %d' % (
@@ -138,10 +140,14 @@ def convert_cub200_to_tfrecord():
                 height, width, channel = image_reader.read_image_dims(image_data)
 
                 if channel != 3:
-                    print ("image:{} channel number:{}, not a legal rgb image".format(image_name, channel))
+                    print ("\nimage:{} channel number:{}, not a legal rgb image".format(image_name, channel))
                 else:
-                    image_record = image_to_tfexample(image_data, image_name, height, width, class_label, class_desc)
+                    image_record = image_to_tfexample(image_data, image_name, height, width, img_class, img_label_desc)
                     tfrecord_writer.write(image_record.SerializeToString())
 
         sys.stdout.write('\n')
         sys.stdout.flush()
+
+
+if __name__ == '__main__':
+    convert_cub200_to_tfrecord()
