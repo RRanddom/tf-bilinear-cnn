@@ -20,10 +20,13 @@ _FILE_PATTERN = '%s-*.tfrecord'
 def get_dataset_dir(dataset_name):
     if dataset_name == 'cub200':
         return '/data/CUB_200_2011/CUB_200_2011/tfrecord/'
+
     elif dataset_name == 'aircraft':
         raise ValueError('aircraft dataset under construction')
+
     elif dataset_name == 'standfordcars':
-        raise ValueError('standfordcars dataset under construction')
+        return '/data/standford-cars/tfrecord/'
+
     else:
         raise ValueError('dataset_name '+str(dataset_name) +' unknown')
 
