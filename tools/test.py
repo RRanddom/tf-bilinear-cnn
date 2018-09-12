@@ -16,8 +16,9 @@ def _preprocess_for_testing(input_image, input_height, input_width, image_name, 
     _R_MEAN, _G_MEAN, _B_MEAN = cfg._RGB_MEAN
     rgb_mean = tf.reshape(np.array([_R_MEAN, _G_MEAN, _B_MEAN]).astype(np.float32), [1,1,3])
     input_image = input_image - rgb_mean 
-    
+
     resized = tf.image.resize_images(input_image, (448, 448))
+    resized = tf.reshape(resized,shape=[448,448,3])
 
     return resized, input_height, input_width, image_name, image_label, label_desc
 
@@ -25,10 +26,12 @@ def input_pipeline():
 
     dataset = get_dataset(dataset_name=cfg.current_dataset, split_name='test')
     dataset = dataset.map(_preprocess_for_testing)
-    dataset = dataset.repeat(1).batch(cfg.BATCH_SIZE)
+    dataset = dataset.repeat(1).batch(cfg.BATCH_SIZE*2)
 
     iterator = dataset.make_one_shot_iterator()
     input_image, input_height, input_width, image_name, image_label, label_desc = iterator.get_next()
+    
+    print ("what is test dataset:{}".format(dataset))
     return input_image, image_label
 
 
@@ -40,8 +43,9 @@ def bcnn_eval(features, labels, mode, params):
         params: additional params
     '''
     logits = bilinear_cnn(features, is_training=False, fine_tuning=False, num_class=cfg.num_classes)
-    predictions = tf.argmax(logits, axis=0)
 
+    predictions = tf.argmax(logits, axis=-1)
+    
     loss = tf.losses.softmax_cross_entropy(onehot_labels=tf.one_hot(labels, depth=cfg.num_classes), logits=logits)
     tf.summary.scalar('softmax_loss', loss)
     global_step = tf.train.get_or_create_global_step()
@@ -52,6 +56,7 @@ def bcnn_eval(features, labels, mode, params):
 
     return tf.estimator.EstimatorSpec(mode=mode, 
                                       predictions=logits,
+                                      loss=loss,
                                       eval_metric_ops={'acc': (accuracy, update_op)})
 
 def main(unused_argv):
@@ -60,9 +65,8 @@ def main(unused_argv):
                     .replace(save_summary_steps=2500)\
                     .replace(log_step_count_steps=10)
 
-    train_dir = cfg.train_dir
     model = tf.estimator.Estimator(model_fn=bcnn_eval,
-                                   model_dir=train_dir,
+                                   model_dir=cfg.finetune_dir,
                                    config=run_config,
                                    params={})
 
