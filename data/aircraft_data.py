@@ -10,6 +10,7 @@ import os
 from data.make_tfrecord import ImageReader, image_to_tfexample
 import math
 import sys
+import tensorflow as tf
 
 aircraft_classes = ["707-320", "727-200", "737-200", "737-300", "737-400", "737-500", "737-600", "737-700", "737-800", \
 "737-900", "747-100", "747-200", "747-300", "747-400", "757-200", "757-300", "767-200", "767-300", "767-400", "777-200", \

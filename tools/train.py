@@ -12,6 +12,7 @@ from model.bilinear_cnn import bilinear_cnn
 
 def _preprocess_for_training(input_image, input_height, input_width, image_name, image_label, label_desc):
     input_image = tf.expand_dims(input_image, 0)
+    input_image = tf.cast(input_image, dtype=tf.float32)
 
     _R_MEAN, _G_MEAN, _B_MEAN = cfg._RGB_MEAN
     rgb_mean = tf.reshape(np.array([_R_MEAN, _G_MEAN, _B_MEAN]).astype(np.float32), [1,1,1,3])
@@ -43,7 +44,7 @@ def input_pipeline(num_epochs=10):
 def get_init_fn_for_train(vgg_pretrained_path, model_dir, exclude_vars=[]):
 
     if tf.train.latest_checkpoint(model_dir):
-        tf.logging.info("Ignore pretrained mobilenet path because a checkpoint file already exists")
+        tf.logging.info("Ignore pretrained vgg model because a checkpoint file already exists")
         return None
     
     variables_to_restore = []
@@ -67,21 +68,27 @@ def get_init_fn_for_train(vgg_pretrained_path, model_dir, exclude_vars=[]):
 
     return callback
 
-def get_init_fn_for_finetune(train_dir):
+def get_init_fn_for_finetune(train_dir, finetune_dir):
+
+    if tf.train.latest_checkpoint(finetune_dir):
+        tf.logging.info("Ignore pretrained model because a checkpoint file already exists")
+        return None
+
     variables_to_restore = []
     for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
         if not 'Momentum' in var.name:
             variables_to_restore.append(var)
+            
+    saver = tf.train.Saver(variables_to_restore)
+    saver.build()
 
-        saver = tf.train.Saver(variables_to_restore)
-        saver.build()
+    if tf.gfile.IsDirectory(train_dir):
+        train_dir = tf.train.latest_checkpoint(train_dir)
 
-        if tf.gfile.IsDirectory(train_dir):
-            train_dir = tf.train.latest_checkpoint(train_dir)
+    def callback(scaffold, sess):
+        saver.restore(sess, train_dir)
 
-        def callback(scaffold, sess):
-            sess.restore(sess, train_dir)
-        return callback
+    return callback
 
 
 def bcnn_train_model(features, labels, mode, params):
@@ -126,7 +133,7 @@ def bcnn_finetune_model(features, labels, mode, params):
                                       predictions=logits, 
                                       loss=loss, 
                                       train_op=train_op,
-                                      scaffold=tf.train.Scaffold(init_fn=get_init_fn(cfg.train_dir)))
+                                      scaffold=tf.train.Scaffold(init_fn=get_init_fn_for_finetune(cfg.train_dir, cfg.finetune_dir)))
 
 
 def main(unused_argv):
@@ -145,9 +152,8 @@ def main(unused_argv):
     model.train(input_fn=lambda :input_pipeline(num_epochs=45), hooks=None, max_steps=25000)
     tf.logging.info('Finish training model')
 
-
     finetune_model = tf.estimator.Estimator(model_fn=bcnn_finetune_model, 
-                                            model_dir=train_dir,
+                                            model_dir=cfg.finetune_dir,
                                             config=run_config,
                                             params={})
     tf.logging.info('start finetuning model')

@@ -39,7 +39,7 @@ cfg.momentum = .9
 cfg.BATCH_SIZE = 32
 
 # Choose the dataset you want to train/test
-cfg.current_dataset = "cub200" # one of ["cub200", "aircraft", "standfordcars"]
+cfg.current_dataset = "standfordcars" # one of ["cub200", "aircraft", "standfordcars"]
 
 if cfg.current_dataset == "cub200":
     cfg._RGB_MEAN = cub200._RGB_MEAN
@@ -57,8 +57,8 @@ else:
     raise ValueError('Name of dataset unknown %s' % cfg.current_dataset)
 
 
-cfg.train_dir = '/data/' + cfg.current_dataset + 'train_dir'
-cfg.finetune_dir = '/data/' + cfg.current_dataset + 'findtune'
+cfg.train_dir = '/data/' + cfg.current_dataset + '_train_dir'
+cfg.finetune_dir = '/data/' + cfg.current_dataset + '_finetune'
 
 # Download pretrained vgg model at [http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz]
 cfg.vgg_pretrained_path = "/data/model/tf_model/vgg_16.ckpt"

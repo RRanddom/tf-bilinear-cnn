@@ -8,6 +8,7 @@ eval_results/*
 test/*
 log/*
 .nohup
+nohup.out
 
 # C extensions
 *.so

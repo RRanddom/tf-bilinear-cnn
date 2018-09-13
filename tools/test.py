@@ -13,6 +13,7 @@ from tools.config import cfg
 
 def _preprocess_for_testing(input_image, input_height, input_width, image_name, image_label, label_desc):
         
+    input_image = tf.cast(input_image, dtype=tf.float32)
     _R_MEAN, _G_MEAN, _B_MEAN = cfg._RGB_MEAN
     rgb_mean = tf.reshape(np.array([_R_MEAN, _G_MEAN, _B_MEAN]).astype(np.float32), [1,1,3])
     input_image = input_image - rgb_mean 
@@ -31,7 +32,6 @@ def input_pipeline():
     iterator = dataset.make_one_shot_iterator()
     input_image, input_height, input_width, image_name, image_label, label_desc = iterator.get_next()
     
-    print ("what is test dataset:{}".format(dataset))
     return input_image, image_label
 
 
