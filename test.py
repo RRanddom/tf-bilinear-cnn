@@ -71,7 +71,7 @@ def main(unused_argv):
                                    params={})
 
     tf.logging.info('Start eval model')
-    result = model.evaluate(input_fn=input_pipeline)
+    model.evaluate(input_fn=input_pipeline)
     tf.logging.info('Finish eval model')
 
 
