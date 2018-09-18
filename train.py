@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 
 from data.dataset_factory import get_dataset
-from tools.config import cfg
+from model.config import cfg
 from model.bilinear_cnn import bilinear_cnn
 
 def _preprocess_for_training(input_image, input_height, input_width, image_name, image_label, label_desc):

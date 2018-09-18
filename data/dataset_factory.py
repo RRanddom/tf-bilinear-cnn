@@ -10,6 +10,7 @@ from data.make_tfrecord import _parse_function
 _FILE_PATTERN = '%s-*.tfrecord'
 
 def get_dataset_dir(dataset_name):
+    
     if dataset_name == 'cub200':
         return '/data/CUB_200_2011/CUB_200_2011/tfrecord/'
 
