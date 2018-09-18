@@ -6,7 +6,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.contrib import slim
 from model.vgg import vgg_conv_body
-from tools.config import cfg
+from model.config import cfg
 
 def bilinear_cnn(inputs, is_training, fine_tuning, num_class=-1):
 

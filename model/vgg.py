@@ -8,7 +8,6 @@ from tensorflow.contrib import slim
 from tensorflow.contrib.layers.python.layers import regularizers
 from tensorflow.python.ops import init_ops
 
-
 def vgg_arg_scope(weight_decay=0.0005):
     """Defines the VGG arg scope.
     Args:
