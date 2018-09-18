@@ -4,24 +4,39 @@
 
 1. TensorFlow with gpu support, my TensorFlow version is 1.80
 
-2. You shold have at least one dataset to run the training procedure [FGVC-Aircraft](http://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/),  [Caltech-UCSD Birds-200-2011](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html), [Cars Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
+2. You shold have at least one dataset to run the training [FGVC-Aircraft](http://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/),  [Caltech-UCSD Birds-200-2011](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html), [Cars Dataset](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
 
-3. Download Pretrained VGG Model at [this link](http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz)
+3. Download Pretrained [VGG Model](http://download.tensorflow.org/models/vgg_16_2016_08_28.tar.gz)
+
+## Build the Dataset
+
+1. Change the dataset path in data/aircraft_data.py, data/cub200_data.py and data/standford_cars.py
+
+
+```
+$ python data/build_aircraft_data.py 
+```
+
+```
+$ python data/build_cub200_data.py
+```
+
+```
+$ python data/build_standford_cars.py
+```
 
 ## Training & Testing
 
-1. Replace the dataset_path and vgg_pretrained_path in config.py
-
-2. You can see more configurations in config.py
+1. Change the tfrecord path in data/dataset_factory.py
 
 Command for training
 ```
-$ python tools/train.py
+$ python train.py
 ```
 
 Command for testing
 ```
-$ python tools/test.py
+$ python test.py
 ```
 
 ## My Results
@@ -45,6 +60,6 @@ $ python tools/test.py
 I also steal some ideas from https://github.com/HaoMood/bilinear-cnn and https://github.com/abhaydoke09/Bilinear-CNN-TensorFlow
 
 
-### TODO
+### Recent Change
 
-1. More advanced input pipelines should be applied to accelerate the training/testing process, current method is quiet stupid.
+I refactor the training/testing code with tf.estimator API

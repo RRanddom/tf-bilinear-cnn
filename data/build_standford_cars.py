@@ -11,9 +11,6 @@ import math
 import sys
 import tensorflow as tf
 
-stanford_car_devkit = "/data/standford-cars/devkit"
-
-
 root_dir = "/data/standford-cars/"
 
 train_img_dir = os.path.join(root_dir, "cars_train")
