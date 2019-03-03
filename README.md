@@ -46,6 +46,21 @@ $ python test.py
 | Accuracy        | 82.6%            | 84.2%                | 88.5%                |
 
 
+## Something interesting!
+
+After training is finished, I use the "Class Activation Mapping" technique introduced by [this paper](https://arxiv.org/pdf/1512.04150.pdf) to 
+visualize the vgg activation map. 
+
+![demo_1](https://raw.githubusercontent.com/RRanddom/tf-bilinear-cnn/master/demo/demo_1.png)
+
+![demo_2](https://raw.githubusercontent.com/RRanddom/tf-bilinear-cnn/master/demo/demo_2.png)
+
+![demo_3](https://raw.githubusercontent.com/RRanddom/tf-bilinear-cnn/master/demo/demo_3.png)
+
+![demo_4](https://raw.githubusercontent.com/RRanddom/tf-bilinear-cnn/master/demo/demo_5.png)
+
+![demo_5](https://raw.githubusercontent.com/RRanddom/tf-bilinear-cnn/master/demo/demo_6.png)
+
 ## References
 
 ```
