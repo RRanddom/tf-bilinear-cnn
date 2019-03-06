@@ -48,8 +48,7 @@ $ python test.py
 
 ## Something interesting!
 
-After training is finished, I use the "Class Activation Mapping" technique introduced by [this paper](https://arxiv.org/pdf/1512.04150.pdf) to 
-visualize the vgg activation map. 
+After training is finished, I visualize some activation maps after vgg/pool5 layer:
 
 ![demo_1](https://raw.githubusercontent.com/RRanddom/tf-bilinear-cnn/master/demo/demo_1.png)
 
